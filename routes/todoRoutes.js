@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 const { body, validationResult } = require("express-validator");
 const { auth, isAdmin } = require("../middleware/auth.js");
 const checkPermission = require("../middleware/checkPermission.js");
+const { createResponse } = require("../utils/responseHandler");
 
 // Route pour obtenir les todos de l'utilisateur connecté
 router.get("/", auth, async (req, res) => {
@@ -14,12 +15,12 @@ router.get("/", auth, async (req, res) => {
         userId: req.userId,
       },
     });
-    res.json(todos);
+    res.json(createResponse(true, todos, "Todos récupérés avec succès"));
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      error: "Une erreur est survenue lors de la récupération des todos.",
-    });
+    res.status(500).json(
+      createResponse(false, null, "Une erreur est survenue lors de la récupération des todos.")
+    );
   }
 });
 
@@ -31,7 +32,7 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json(createResponse(false, errors.array(), "Validation échouée"));
     }
 
     const { title } = req.body;
@@ -44,12 +45,12 @@ router.post(
           userId: req.userId,
         },
       });
-      res.status(201).json(todo);
+      res.status(201).json(createResponse(true, todo, "Todo créé avec succès"));
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "Une erreur est survenue lors de la création du todo.",
-      });
+      res.status(500).json(
+        createResponse(false, null, "Une erreur est survenue lors de la création du todo.")
+      );
     }
   }
 );
@@ -68,12 +69,12 @@ router.delete(
           userId: req.userId,
         },
       });
-      res.json({ message: "Todo supprimé avec succès" });
+      res.json(createResponse(true, todo, "Todo supprimé avec succès"));
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "Une erreur est survenue lors de la suppression du todo.",
-      });
+      res.status(500).json(
+        createResponse(false, null, "Une erreur est survenue lors de la suppression du todo.")
+      );
     }
   }
 );
@@ -86,7 +87,7 @@ router.put(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json(createResponse(false, errors.array(), "Validation échouée"));
     }
 
     const { title } = req.body;
@@ -102,12 +103,12 @@ router.put(
           userId: req.userId,
         },
       });
-      res.status(200).json(todo);
+      res.status(200).json(createResponse(true, todo, "Todo mis à jour avec succès"));
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "Une erreur est survenue lors de la mise à jour du todo.",
-      });
+      res.status(500).json(
+        createResponse(false, null, "Une erreur est survenue lors de la mise à jour du todo.")
+      );
     }
   }
 );

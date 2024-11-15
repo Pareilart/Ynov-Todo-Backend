@@ -6,6 +6,8 @@ const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { auth } = require("../middleware/auth.js");
+const { createResponse } = require("../utils/responseHandler");
+
 // Route GET pour récupérer tous les utilisateurs avec leurs todos et rôles
 router.get("/me", auth, async (req, res) => {
   try {
@@ -19,13 +21,18 @@ router.get("/me", auth, async (req, res) => {
     });
 
     // Retourner la liste des utilisateurs
-    res.status(200).json(users);
+    res.status(200).json(createResponse(
+      true,
+      users,
+      "Utilisateur récupéré avec succès"
+    ));
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      error:
-        "Une erreur est survenue lors de la récupération des utilisateurs.",
-    });
+    res.status(500).json(createResponse(
+      false,
+      null,
+      "Une erreur est survenue lors de la récupération des utilisateurs"
+    ));
   }
 });
 
@@ -50,7 +57,11 @@ router.post(
     // Vérification des erreurs de validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json(createResponse(
+        false,
+        errors.array(),
+        "Erreurs de validation"
+      ));
     }
 
     const { name, email, password } = req.body;
@@ -62,7 +73,11 @@ router.post(
       });
 
       if (existingUser) {
-        return res.status(400).json({ error: "L'email est déjà utilisé." });
+        return res.status(400).json(createResponse(
+          false,
+          null,
+          "L'email est déjà utilisé"
+        ));
       }
 
       // Hachage du mot de passe
@@ -74,15 +89,28 @@ router.post(
           name,
           email,
           password: hashedPassword,
+          roles: {
+            connect: {
+              name: 'USER'  // Connexion avec le rôle USER existant
+            }
+          }
         },
+        include: {
+          roles: true  // Inclure les rôles dans la réponse
+        }
       });
 
       // Retourner l'utilisateur créé sans le mot de passe
-      res.status(201).json({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      });
+      res.status(201).json(createResponse(
+        true,
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          roles: user.roles
+        },
+        "Utilisateur créé avec succès"
+      ));
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Une erreur est survenue." });
@@ -100,14 +128,22 @@ router.post("/login", async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ error: "Utilisateur non trouvé" });
+      return res.status(400).json(createResponse(
+        false,
+        null,
+        "Utilisateur non trouvé"
+      ));
     }
 
     // Comparaison du mot de passe avec le mot de passe haché
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(400).json({ error: "Mot de passe incorrect" });
+      return res.status(400).json(createResponse(
+        false,
+        null,
+        "Mot de passe incorrect"
+      ));
     }
 
     // Génération du JWT sécurisé avec un algorithme sécurisé
@@ -123,11 +159,14 @@ router.post("/login", async (req, res) => {
     });
 
     // Retourner le token et le refresh token dans la réponse
-    res.status(200).json({
-      message: "Connexion réussie",
-      token,
-      refreshToken,
-    });
+    res.status(200).json(createResponse(
+      true,
+      {
+        token,
+        refreshToken
+      },
+      "Connexion réussie"
+    ));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Une erreur est survenue." });

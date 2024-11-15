@@ -4,6 +4,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const { body, validationResult } = require("express-validator");
 const { auth, isAdmin } = require("../middleware/auth.js");
+const { createResponse } = require("../utils/responseHandler");
 
 // Créer un nouveau rôle
 router.post(
@@ -15,26 +16,27 @@ router.post(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json(createResponse(false, null, errors.array()));
       }
 
-      // Vérifier si le rôle existe déjà
       const existingRole = await prisma.role.findFirst({
         where: { name: req.body.name },
       });
 
       if (existingRole) {
-        return res
-          .status(400)
-          .json({ message: "Un rôle avec ce nom existe déjà" });
+        return res.status(400).json(
+          createResponse(false, null, "Un rôle avec ce nom existe déjà")
+        );
       }
 
       const role = await prisma.role.create({
         data: { name: req.body.name },
       });
-      res.json(role);
+      res.json(createResponse(true, role, "Rôle créé avec succès"));
     } catch (error) {
-      res.status(500).json({ message: "Erreur serveur", error });
+      res.status(500).json(
+        createResponse(false, null, "Erreur serveur")
+      );
     }
   }
 );
@@ -51,7 +53,9 @@ router.post("/users/:userId/role/:roleId", auth, isAdmin, async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      return res.status(404).json(
+        createResponse(false, null, "Utilisateur non trouvé")
+      );
     }
 
     // Vérifier si le rôle existe
@@ -60,7 +64,9 @@ router.post("/users/:userId/role/:roleId", auth, isAdmin, async (req, res) => {
     });
 
     if (!role) {
-      return res.status(404).json({ message: "Rôle non trouvé" });
+      return res.status(404).json(
+        createResponse(false, null, "Rôle non trouvé")
+      );
     }
 
     // Vérifier si le rôle est déjà assigné
@@ -68,9 +74,9 @@ router.post("/users/:userId/role/:roleId", auth, isAdmin, async (req, res) => {
       (r) => r.id === parseInt(roleId)
     );
     if (roleAlreadyAssigned) {
-      return res
-        .status(400)
-        .json({ message: "Le rôle est déjà assigné à cet utilisateur" });
+      return res.status(400).json(
+        createResponse(false, null, "Le rôle est déjà assigné à cet utilisateur")
+      );
     }
 
     // Assigner le rôle
@@ -81,9 +87,11 @@ router.post("/users/:userId/role/:roleId", auth, isAdmin, async (req, res) => {
       },
     });
 
-    res.json({ message: "Rôle assigné avec succès" });
+    res.json(createResponse(true, null, "Rôle assigné avec succès"));
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error });
+    res.status(500).json(
+      createResponse(false, null, "Erreur serveur")
+    );
   }
 });
 
@@ -97,7 +105,7 @@ router.post(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json(createResponse(false, null, errors.array()));
       }
 
       // Vérifier si la permission existe déjà
@@ -106,17 +114,19 @@ router.post(
       });
 
       if (existingPermission) {
-        return res
-          .status(400)
-          .json({ message: "Une permission avec ce nom existe déjà" });
+        return res.status(400).json(
+          createResponse(false, null, "Une permission avec ce nom existe déjà")
+        );
       }
 
       const permission = await prisma.permission.create({
         data: { name: req.body.name },
       });
-      res.json(permission);
+      res.json(createResponse(true, permission, "Permission créée avec succès"));
     } catch (error) {
-      res.status(500).json({ message: "Erreur serveur", error });
+      res.status(500).json(
+        createResponse(false, null, "Erreur serveur")
+      );
     }
   }
 );
@@ -133,7 +143,9 @@ router.post("/permission/:permissionId/role/:roleId", auth, isAdmin, async (req,
     });
 
     if (!role) {
-      return res.status(404).json({ message: "Rôle non trouvé" });
+      return res.status(404).json(
+        createResponse(false, null, "Rôle non trouvé")
+      );
     }
 
     // Vérifier si la permission existe
@@ -142,7 +154,9 @@ router.post("/permission/:permissionId/role/:roleId", auth, isAdmin, async (req,
     });
 
     if (!permission) {
-      return res.status(404).json({ message: "Permission non trouvée" });
+      return res.status(404).json(
+        createResponse(false, null, "Permission non trouvée")
+      );
     }
 
     // Vérifier si la permission est déjà assignée au rôle
@@ -150,9 +164,9 @@ router.post("/permission/:permissionId/role/:roleId", auth, isAdmin, async (req,
       (p) => p.id === parseInt(permissionId)
     );
     if (permissionAlreadyAssigned) {
-      return res
-        .status(400)
-        .json({ message: "La permission est déjà assignée à ce rôle" });
+      return res.status(400).json(
+        createResponse(false, null, "La permission est déjà assignée à ce rôle")
+      );
     }
 
     // Assigner la permission au rôle
@@ -163,9 +177,11 @@ router.post("/permission/:permissionId/role/:roleId", auth, isAdmin, async (req,
       },
     });
 
-    res.json({ message: "Permission assignée avec succès" });
+    res.json(createResponse(true, null, "Permission assignée avec succès"));
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error });
+    res.status(500).json(
+      createResponse(false, null, "Erreur serveur")
+    );
   }
 });
 
