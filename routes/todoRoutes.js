@@ -7,6 +7,14 @@ const { auth, isAdmin } = require("../middleware/auth.js");
 const checkPermission = require("../middleware/checkPermission.js");
 const { createResponse } = require("../utils/responseHandler");
 
+// Au début du fichier, après les imports
+const TODO_STATUS = {
+  EN_ATTENTE: 'EN_ATTENTE',
+  EN_COURS: 'EN_COURS',
+  TERMINE: 'TERMINE',
+  ARCHIVE: 'ARCHIVE',
+};
+
 // Route pour obtenir les todos de l'utilisateur connecté
 router.get("/", auth, async (req, res) => {
   try {
@@ -28,14 +36,19 @@ router.get("/", auth, async (req, res) => {
 router.post(
   "/create",
   auth,
-  [body("title").notEmpty().withMessage("Le titre est obligatoire.")],
+  [
+    body("title").notEmpty().withMessage("Le titre est obligatoire."),
+    body("status")
+      .isIn(Object.values(TODO_STATUS))
+      .withMessage("Le statut doit être EN_ATTENTE, EN_COURS ou TERMINE")
+  ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json(createResponse(false, errors.array(), "Validation échouée"));
     }
 
-    const { title } = req.body;
+    const { title, status } = req.body;
 
     try {
       // Création du todo dans la base de données
@@ -43,6 +56,7 @@ router.post(
         data: {
           title,
           userId: req.userId,
+          status,
         },
       });
       res.status(201).json(createResponse(true, todo, "Todo créé avec succès"));
@@ -108,6 +122,49 @@ router.put(
       console.error(error);
       res.status(500).json(
         createResponse(false, null, "Une erreur est survenue lors de la mise à jour du todo.")
+      );
+    }
+  }
+);
+
+// Route PATCH pour basculer l'état de complétion d'un todo
+router.patch(
+  "/toggle-completion/:id",
+  auth,
+  async (req, res) => {
+    try {
+      const todoId = parseInt(req.params.id);
+      
+      // Récupérer d'abord le todo actuel
+      const currentTodo = await prisma.todo.findUnique({
+        where: {
+          id: todoId,
+          userId: req.userId,
+        },
+      });
+
+      if (!currentTodo) {
+        return res.status(404).json(
+          createResponse(false, null, "Todo non trouvé")
+        );
+      }
+
+      // Basculer la valeur du booléen completed
+      const todo = await prisma.todo.update({
+        where: {
+          id: todoId,
+          userId: req.userId,
+        },
+        data: {
+          completed: !currentTodo.completed,
+        },
+      });
+
+      res.json(createResponse(true, todo, "État de complétion du todo mis à jour avec succès"));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(
+        createResponse(false, null, "Une erreur est survenue lors de la mise à jour de l'état de complétion du todo.")
       );
     }
   }
