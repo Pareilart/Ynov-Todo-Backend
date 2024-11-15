@@ -5,12 +5,18 @@ const prisma = new PrismaClient();
 const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-
-// Route GET pour récupérer tous les utilisateurs
-router.get("/", async (req, res) => {
+const { auth } = require("../middleware/auth.js");
+// Route GET pour récupérer tous les utilisateurs avec leurs todos et rôles
+router.get("/me", auth, async (req, res) => {
   try {
-    // Récupérer tous les utilisateurs
-    const users = await prisma.user.findMany();
+    // Récupérer tous les utilisateurs avec leurs todos et rôles
+    const users = await prisma.user.findUnique({
+      where: { id: req.userId },
+      include: {
+        todos: true,
+        roles: true
+      }
+    });
 
     // Retourner la liste des utilisateurs
     res.status(200).json(users);

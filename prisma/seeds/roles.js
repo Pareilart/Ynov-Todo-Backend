@@ -1,24 +1,24 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-
+const seedPermissions = require('./permissions');
 async function seedRoles() {
-  const userRole = await prisma.role.upsert({
-    where: { name: 'user' },
-    update: {},
-    create: {
-      name: 'user',
-    },
+  const { deleteTodosPermission } = await seedPermissions();
+
+  const userRole = await prisma.role.create({
+    data: {
+      name: "USER"
+    }
   });
 
-  const adminRole = await prisma.role.upsert({
-    where: { name: 'admin' },
-    update: {},
-    create: {
-      name: 'admin',
-    },
+  const adminRole = await prisma.role.create({
+    data: {
+      name: "ADMIN",
+      permissions: {
+        connect: [{ id: deleteTodosPermission.id }]
+      }
+    }
   });
 
-  console.log('Rôles récupérés ou créés:', userRole.name, adminRole.name);
   return { userRole, adminRole };
 }
 

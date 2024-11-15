@@ -1,9 +1,10 @@
 const jwt = require('jsonwebtoken');
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
 const auth = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
     if (!token) {
       return res.status(401).json({ error: 'Authentification requise' });
     }
@@ -16,4 +17,21 @@ const auth = async (req, res, next) => {
   }
 };
 
-module.exports = auth;
+const isAdmin = async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      include: { roles: true }
+    });
+    
+    if (user.roles.some(role => role.name === 'admin')) {
+      next();
+    } else {
+      res.status(403).json({ message: "Accès refusé: droits d'administrateur requis" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur", error });
+  }
+};
+
+module.exports = { auth, isAdmin };
