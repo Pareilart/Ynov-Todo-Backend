@@ -17,8 +17,11 @@ npm install
 
 3. Configurez votre fichier `.env` avec vos variables d'environnement
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/db_name?schema=public"
+DATABASE_URL="file:./dev.db"
+JWT_SECRET="80d7c8af7b2edad52c773b9d68f8ee2ae78abfd7726e3a211edb82394341c23c44bb242bcfbdf3e85a5863edb99319a3c368e5e6b2dee563390f10982718bfed"
 ```
+Le JWT_SECRET sera utilisé pour signer et vérifier les tokens JWT.
+
 
 ## 📋 Commandes disponibles
 
