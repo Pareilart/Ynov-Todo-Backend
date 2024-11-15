@@ -162,6 +162,7 @@ router.post("/login", async (req, res) => {
     res.status(200).json(createResponse(
       true,
       {
+        user,
         token,
         refreshToken
       },
