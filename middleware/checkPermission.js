@@ -6,7 +6,7 @@ const checkPermission = (permissionName) => {
     try {
       // Récupérer l'utilisateur avec ses rôles et leurs permissions
       const user = await prisma.user.findUnique({
-        where: { id: req.user.id },
+        where: { id: req.userId },
         include: {
           roles: {
             include: {
@@ -29,6 +29,7 @@ const checkPermission = (permissionName) => {
 
       next();
     } catch (error) {
+      console.log(error);
       res.status(500).json({ message: "Erreur serveur", error });
     }
   };

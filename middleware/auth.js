@@ -24,7 +24,7 @@ const isAdmin = async (req, res, next) => {
       include: { roles: true }
     });
     
-    if (user.roles.some(role => role.name === 'admin')) {
+    if (user.roles.some(role => role.name === 'ADMIN')) {
       next();
     } else {
       res.status(403).json({ message: "Accès refusé: droits d'administrateur requis" });

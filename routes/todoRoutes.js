@@ -11,8 +11,8 @@ const { createResponse } = require("../utils/responseHandler");
 const TODO_STATUS = {
   EN_ATTENTE: 'EN_ATTENTE',
   EN_COURS: 'EN_COURS',
-  TERMINE: 'TERMINE',
-  ARCHIVE: 'ARCHIVE',
+  TERMINEE: 'TERMINEE',
+  ARCHIVEE: 'ARCHIVEE',
 };
 
 // Route pour obtenir les todos de l'utilisateur connecté
@@ -40,7 +40,7 @@ router.post(
     body("title").notEmpty().withMessage("Le titre est obligatoire."),
     body("status")
       .isIn(Object.values(TODO_STATUS))
-      .withMessage("Le statut doit être EN_ATTENTE, EN_COURS ou TERMINE")
+      .withMessage("Le statut doit être EN_ATTENTE, EN_COURS ou TERMINEE")
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -83,6 +83,7 @@ router.delete(
           userId: req.userId,
         },
       });
+      
       res.json(createResponse(true, todo, "Todo supprimé avec succès"));
     } catch (error) {
       console.error(error);
@@ -165,6 +166,60 @@ router.patch(
       console.error(error);
       res.status(500).json(
         createResponse(false, null, "Une erreur est survenue lors de la mise à jour de l'état de complétion du todo.")
+      );
+    }
+  }
+);
+
+// Route PATCH pour mettre à jour le statut d'un todo
+router.patch(
+  "/updateStatus/:id",
+  auth,
+  [
+    body("status").isIn(Object.values(TODO_STATUS)).withMessage("Le nouveau statut est invalide")
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json(createResponse(false, errors.array(), "Validation échouée"));
+    }
+
+    try {
+      const todoId = parseInt(req.params.id);
+      const { status: newStatus } = req.body;
+
+      const todo = await prisma.todo.findUnique({
+        where: {
+          id: todoId,
+          userId: req.userId,
+        },
+      });
+
+      if (!todo) {
+        return res.status(404).json(createResponse(false, null, "Todo non trouvé"));
+      }
+
+      if (todo.status === newStatus) {
+        return res.status(400).json(
+          createResponse(false, null, "Le nouveau statut doit être différent du statut actuel")
+        );
+      }
+
+      const updatedTodo = await prisma.todo.update({
+        where: {
+          id: todoId,
+          userId: req.userId,
+        },
+        data: {
+          status: newStatus,
+        },
+      });
+
+      res.json(createResponse(true, updatedTodo, "Statut du todo mis à jour avec succès"));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(
+        createResponse(false, null, "Une erreur est survenue lors de la mise à jour du statut du todo.")
       );
     }
   }

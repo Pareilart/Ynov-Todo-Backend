@@ -125,6 +125,13 @@ router.post("/login", async (req, res) => {
     // Vérification si l'utilisateur existe
     const user = await prisma.user.findUnique({
       where: { email },
+      include: {
+        roles: {
+          include: {
+            permissions: true
+          }
+        }
+      }
     });
 
     if (!user) {
@@ -147,7 +154,13 @@ router.post("/login", async (req, res) => {
     }
 
     // Génération du JWT sécurisé avec un algorithme sécurisé
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ 
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      roles: user.roles,
+      permissions: user.roles.permissions
+     }, process.env.JWT_SECRET, {
       expiresIn: "1h",
       algorithm: "HS256",
     });
