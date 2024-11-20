@@ -80,7 +80,6 @@ router.delete(
       const todo = await prisma.todo.delete({
         where: {
           id: parseInt(req.params.id),
-          userId: req.userId,
         },
       });
       
