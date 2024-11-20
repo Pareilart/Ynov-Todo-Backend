@@ -1,9 +1,10 @@
-const express = require("express");
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import { auth, isAdmin } from "../middleware/auth.js";
+import { createResponse } from "../utils/responseHandler.js";
+
 const router = express.Router();
-const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { auth, isAdmin } = require("../middleware/auth.js");
-const { createResponse } = require("../utils/responseHandler.js");
 
 // Route GET pour récupérer tous les utilisateurs avec leurs todos et rôles
 router.get("/all", auth, isAdmin, async (req, res) => {
@@ -51,4 +52,4 @@ router.get("/:id/todos", auth, isAdmin, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
