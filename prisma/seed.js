@@ -1,7 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-const seedRoles = require("./seeds/roles");
-const seedUsers = require("./seeds/users");
+import seedRoles from "./seeds/roles.js";
+import seedUsers from "./seeds/users.js";
 
 async function main() {
   const { userRole, adminRole } = await seedRoles();

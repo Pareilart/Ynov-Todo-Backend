@@ -1,6 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
 async function seedUsers(userRole, adminRole) {
   const hashedPassword = await bcrypt.hash('123456', 10);
@@ -31,4 +31,4 @@ async function seedUsers(userRole, adminRole) {
   console.log(`Administrateur créé: ${admin.email}`);
 }
 
-module.exports = seedUsers; 
+export default seedUsers; 

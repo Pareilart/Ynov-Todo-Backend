@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function seedPermissions() {
@@ -11,4 +11,4 @@ async function seedPermissions() {
   return { deleteTodosPermission };
 };
 
-module.exports = seedPermissions; 
+export default seedPermissions; 
