@@ -1,12 +1,12 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-const { body, validationResult } = require("express-validator");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const { auth } = require("../middleware/auth.js");
-const { createResponse } = require("../utils/responseHandler");
+import { body, validationResult } from "express-validator";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import { auth } from "../middleware/auth.js";
+import createResponse from "../utils/responseHandler.js";
 
 // Route GET pour récupérer tous les utilisateurs avec leurs todos et rôles
 router.get("/me", auth, async (req, res) => {
@@ -187,4 +187,4 @@ router.post("/login", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

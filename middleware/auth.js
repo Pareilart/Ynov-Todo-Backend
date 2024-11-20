@@ -1,5 +1,6 @@
-const jwt = require('jsonwebtoken');
-const { PrismaClient } = require("@prisma/client");
+import jwt from 'jsonwebtoken';
+import { PrismaClient } from "@prisma/client";
+
 const prisma = new PrismaClient();
 
 const auth = async (req, res, next) => {
@@ -23,7 +24,7 @@ const isAdmin = async (req, res, next) => {
       where: { id: req.userId },
       include: { roles: true }
     });
-    
+
     if (user.roles.some(role => role.name === 'ADMIN')) {
       next();
     } else {
@@ -34,4 +35,4 @@ const isAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { auth, isAdmin };
+export { auth, isAdmin };

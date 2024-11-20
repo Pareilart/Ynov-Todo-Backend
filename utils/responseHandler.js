@@ -6,4 +6,4 @@ const createResponse = (success = false, data = null, message = "") => {
   };
 };
 
-module.exports = { createResponse }; 
+export default createResponse; 

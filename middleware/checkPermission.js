@@ -1,4 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const checkPermission = (permissionName) => {
@@ -35,4 +35,4 @@ const checkPermission = (permissionName) => {
   };
 };
 
-module.exports = checkPermission; 
+export default checkPermission; 

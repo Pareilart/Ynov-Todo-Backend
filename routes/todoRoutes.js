@@ -1,11 +1,11 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-const { body, validationResult } = require("express-validator");
-const { auth, isAdmin } = require("../middleware/auth.js");
-const checkPermission = require("../middleware/checkPermission.js");
-const { createResponse } = require("../utils/responseHandler");
+import { body, validationResult } from "express-validator";
+import { auth, isAdmin } from "../middleware/auth.js";
+import checkPermission from "../middleware/checkPermission.js";
+import createResponse from "../utils/responseHandler.js";
 
 // Au début du fichier, après les imports
 const TODO_STATUS = {
@@ -224,4 +224,4 @@ router.patch(
   }
 );
 
-module.exports = router;
+export default router;

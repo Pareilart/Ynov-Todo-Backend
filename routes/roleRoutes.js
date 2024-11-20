@@ -1,10 +1,10 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-const { body, validationResult } = require("express-validator");
-const { auth, isAdmin } = require("../middleware/auth.js");
-const { createResponse } = require("../utils/responseHandler");
+import { body, validationResult } from "express-validator";
+import { auth, isAdmin } from "../middleware/auth.js";
+import createResponse from "../utils/responseHandler.js";
 
 // Créer un nouveau rôle
 router.post(
@@ -185,4 +185,4 @@ router.post("/permission/:permissionId/role/:roleId", auth, isAdmin, async (req,
   }
 });
 
-module.exports = router;
+export default router;
