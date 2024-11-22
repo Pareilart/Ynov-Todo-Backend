@@ -8,12 +8,25 @@ const app = express();
 
 app.use(express.json());
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://ynov-todo-frontend.vercel.app"
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Si aucune origine (par exemple, requêtes locales) ou origine autorisée
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Sinon, bloquer l'origine
+    return callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
 
 app.use('/api/users', userRoutes);
 app.use('/api/todos', todoRoutes);
